@@ -8,5 +8,6 @@
 </head>
 <body>
 게시판 페이지
+<a href="/">홈페이지</a>
 </body>
 </html>
