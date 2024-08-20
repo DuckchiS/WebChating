@@ -28,6 +28,24 @@ public class SecurityConfig {
 		        .anyRequest().permitAll()
 				);
 		
+        http.formLogin(auth -> auth
+                .loginPage("/user/login").permitAll()
+                .loginProcessingUrl("/user/loginProc")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/user/login?error=true")
+                .permitAll()
+        );
+
+        http.logout(auth -> auth
+                .logoutUrl("/user/logout")
+                .logoutSuccessUrl("/")
+                .permitAll()
+        );
+
+        http.csrf(csrf -> csrf.disable());
+		
 		return http.build();
 	}
 }

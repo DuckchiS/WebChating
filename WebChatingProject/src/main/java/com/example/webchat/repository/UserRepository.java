@@ -7,5 +7,7 @@ import com.example.webchat.entity.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer>{
-
+    boolean existsByUserId(String userId);  
+    boolean existsByUserNickname(String userNickname); 
+    UserEntity findByUserId(String userId);  
 }
