@@ -2,10 +2,12 @@ package com.example.webchat.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.webchat.dto.ChatDTO;
 import com.example.webchat.entity.ChatEntity;
 import com.example.webchat.entity.ChatReadStatusEntity;
 import com.example.webchat.entity.ChatRoomEntity;
@@ -15,6 +17,7 @@ import com.example.webchat.repository.ChatingRepository;
 
 @Service
 public class ChatingService {
+
     @Autowired
     private ChatingRepository chatingRepository;
 
@@ -26,7 +29,7 @@ public class ChatingService {
         // 새로운 채팅 메시지 엔티티 생성
         ChatEntity message = new ChatEntity();
         
-        // ChatRoomEntity 설정 (여기서는 채팅방 레포지토리를 사용해 채팅방 엔티티를 찾아서 넣어줘야 합니다)
+        // ChatRoomEntity 설정
         ChatRoomEntity chatRoom = new ChatRoomEntity();
         chatRoom.setChatRoomNo(chatRoomNo);
         message.setChatRoom(chatRoom);
@@ -42,7 +45,7 @@ public class ChatingService {
         ChatReadStatusEntity readStatus = new ChatReadStatusEntity();
         readStatus.setChat(message);
         
-        // UserEntity 설정 (여기서는 사용자 엔티티를 찾아서 넣어줘야 합니다)
+        // UserEntity 설정
         UserEntity user = new UserEntity();
         user.setUserNo(userNo);
         readStatus.setUser(user);
@@ -57,8 +60,19 @@ public class ChatingService {
         return message;
     }
 
-    // 특정 채팅방의 모든 메시지 조회
-    public List<ChatEntity> getMessagesByChatRoom(int chatRoomNo) {
-        return chatingRepository.findByChatRoom_ChatRoomNo(chatRoomNo);
+    // 특정 채팅방의 모든 메시지 조회 (ChatDTO로 변환)
+    public List<ChatDTO> getMessagesByChatRoom(int chatRoomNo) {
+        List<ChatEntity> chatEntities = chatingRepository.findByChatRoom_ChatRoomNo(chatRoomNo);
+        return chatEntities.stream().map(this::convertToChatDTO).collect(Collectors.toList());
+    }
+
+    // ChatEntity를 ChatDTO로 변환
+    private ChatDTO convertToChatDTO(ChatEntity chatEntity) {
+        ChatDTO chatDTO = new ChatDTO();
+        chatDTO.setChatNo(chatEntity.getChatNo());
+        chatDTO.setChatContent(chatEntity.getChatContent());
+        chatDTO.setChatDatetime(chatEntity.getChatDatetime());
+        chatDTO.setChatRoomNo(chatEntity.getChatRoom().getChatRoomNo());
+        return chatDTO;
     }
 }

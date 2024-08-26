@@ -16,25 +16,30 @@ import com.example.webchat.repository.ChatReadStatusRepository;
 
 @Service
 public class ReadStatusService {
+    @Autowired
+    private ChatReadStatusRepository chatReadStatusRepository;
 
-	  @Autowired
-	    private ChatReadStatusRepository chatReadStatusRepository;
+    // 읽음 상태 업데이트
+    public void updateReadStatus(int chatNo, int userNo, boolean readStatus) {
+        ChatEntity chatEntity = new ChatEntity();
+        chatEntity.setChatNo(chatNo);
+        
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserNo(userNo);
 
-	    // 읽음 상태 업데이트
-	    public void updateReadStatus(int chatNo, int userNo, boolean readStatus) {
-	        ChatEntity chatEntity = new ChatEntity();
-	        chatEntity.setChatNo(chatNo);
-	        
-	        UserEntity userEntity = new UserEntity();
-	        userEntity.setUserNo(userNo);
+        ChatReadStatusId chatReadStatusId = new ChatReadStatusId(chatEntity, userEntity);
+        Optional<ChatReadStatusEntity> optionalReadStatus = chatReadStatusRepository.findById(chatReadStatusId);
+        
+        if (optionalReadStatus.isPresent()) {
+            ChatReadStatusEntity readStatusEntity = optionalReadStatus.get();
+            readStatusEntity.setReadStatus(readStatus);
+            readStatusEntity.setReadDate(LocalDateTime.now());
+            chatReadStatusRepository.save(readStatusEntity);
+        }
+    }
 
-	        Optional<ChatReadStatusEntity> optionalReadStatus = chatReadStatusRepository.findById(new ChatReadStatusId(chatEntity, userEntity));
-	        
-	        if (optionalReadStatus.isPresent()) {
-	            ChatReadStatusEntity readStatusEntity = optionalReadStatus.get();
-	            readStatusEntity.setReadStatus(readStatus);
-	            readStatusEntity.setReadDate(LocalDateTime.now());
-	            chatReadStatusRepository.save(readStatusEntity);
-	        }
-	    }
+    // 특정 유저의 읽지 않은 메시지 상태 조회
+    public List<ChatReadStatusEntity> getUnreadMessagesByUser(int userNo) {
+        return chatReadStatusRepository.findUnreadByUser(userNo);
+    }
 }

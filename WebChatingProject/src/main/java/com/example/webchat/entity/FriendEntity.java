@@ -34,6 +34,6 @@ public class FriendEntity {
     @Enumerated(EnumType.STRING)
     private FriendStatus status;
 
-    @Column(name = "requestDate", nullable = false)
+    @Column(name = "requestdate", nullable = false)
     private LocalDateTime requestDate;
 }

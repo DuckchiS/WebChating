@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "chatReadStatus")
+@Table(name = "chatreadstatus")
 @IdClass(ChatReadStatusId.class)
 @Getter
 @Setter
