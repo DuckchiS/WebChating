@@ -9,7 +9,7 @@
 <body>
 로그인 페이지
 		<a href="/">홈페이지</a>
-        <form action="loginProc" method="post" name="login" onsubmit="return validateForm()">
+        <form action="/user/loginProc" method="post" name="login" onsubmit="return validateForm()">
             <table>
                 <tr>
                     <td><label for="username">아이디:</label></td>

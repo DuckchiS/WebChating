@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,8 +40,33 @@ public class ChatingController {
     @Autowired
     private ReadStatusService readStatusService;
 
+    // 채팅방 목록 페이지
+    @GetMapping("/chatRoomList")
+    public String chatRoomList(Model model) {
+        // 채팅방 목록을 가져와서 모델에 추가
+        List<ChatRoomEntity> chatRooms = chatRoomService.getAllChatRooms();
+        model.addAttribute("chatRooms", chatRooms);
+        return "chating/chatRoomList"; // chatRoomList.jsp로 포워딩
+    }
 
-    // 채팅방 생성
+    // 채팅방 페이지
+    @GetMapping("/chatRoom/{chatRoomNo}")
+    public String chatRoom(@PathVariable int chatRoomNo, Model model) {
+        // 채팅방 정보를 가져와서 모델에 추가
+        Optional<ChatRoomEntity> chatRoom = chatRoomService.getChatRoomById(chatRoomNo);
+        if (chatRoom.isPresent()) {
+            model.addAttribute("chatRoom", chatRoom.get());
+            // 메시지 목록을 가져와서 모델에 추가
+            List<ChatDTO> messages = chatingService.getMessagesByChatRoom(chatRoomNo);
+            model.addAttribute("messages", messages);
+            return "chating/chatRoom"; // chatRoom.jsp로 포워딩
+        } else {
+            // 채팅방이 없을 경우 에러 페이지로 포워딩
+            return "error/404"; // error/404.jsp로 포워딩
+        }
+    }
+
+    // 채팅방 생성은 JSON 응답으로 계속 처리
     @PostMapping("/rooms")
     @ResponseBody
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO) {
@@ -48,7 +74,7 @@ public class ChatingController {
         return ResponseEntity.ok(new ResponseMessage("Chat room created successfully", chatRoomNo));
     }
 
-    // 유저 닉네임으로 채팅방 조회
+    // 유저 닉네임으로 채팅방 조회 (JSON 응답)
     @GetMapping("/rooms/user/{userNickname}")
     @ResponseBody
     public ResponseEntity<?> getChatRoomsByUser(@PathVariable String userNickname) {
@@ -56,19 +82,7 @@ public class ChatingController {
         return ResponseEntity.ok(chatRooms);
     }
 
-    // 채팅방 입장
-    @GetMapping("/rooms/{chatRoomNo}")
-    @ResponseBody
-    public ResponseEntity<?> getChatRoomById(@PathVariable int chatRoomNo) {
-        Optional<ChatRoomEntity> chatRoom = chatRoomService.getChatRoomById(chatRoomNo);
-        if (chatRoom.isPresent()) {
-            return ResponseEntity.ok(chatRoom.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage("Chat room not found"));
-        }
-    }
-
-    // 채팅 메시지 전송 (ChatDTO 사용)
+    // 채팅 메시지 전송 (JSON 응답)
     @PostMapping("/messages")
     @ResponseBody
     public ResponseEntity<?> sendMessage(@RequestBody ChatDTO chatDTO) {
@@ -76,7 +90,7 @@ public class ChatingController {
         return ResponseEntity.ok(new ResponseMessage("Message sent successfully", message.getChatNo()));
     }
 
-    // 특정 채팅방의 메시지 목록 조회 (ChatDTO 리스트 반환)
+    // 특정 채팅방의 메시지 목록 조회 (JSON 응답)
     @GetMapping("/rooms/{chatRoomNo}/messages")
     @ResponseBody
     public ResponseEntity<?> getMessagesByChatRoom(@PathVariable int chatRoomNo) {
@@ -84,7 +98,7 @@ public class ChatingController {
         return ResponseEntity.ok(messages);
     }
 
-    // 채팅 메시지 읽음 상태 업데이트
+    // 채팅 메시지 읽음 상태 업데이트 (JSON 응답)
     @PostMapping("/read-status")
     @ResponseBody
     public ResponseEntity<?> updateReadStatus(@RequestBody ChatReadStatusDTO readStatusDTO) {

@@ -23,7 +23,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/", "/user/signup", "/user/signupProc","/board/list","/board/read").permitAll()
 				.requestMatchers("/board/write", "/board/del").hasRole("Admin") 
-				.requestMatchers("/chating").hasAnyRole("User","Admin")
+				.requestMatchers("/chating/**").hasAnyRole("USER", "ADMIN")
 				.requestMatchers("/board/reply").authenticated() 
 		        .anyRequest().permitAll()
 				);

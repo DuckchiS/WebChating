@@ -31,4 +31,9 @@ public class ChatRoomService {
     public Optional<ChatRoomEntity> getChatRoomById(int chatRoomNo) {
         return chatRoomRepository.findById(chatRoomNo);
     }
+
+    // 모든 채팅방 조회
+    public List<ChatRoomEntity> getAllChatRooms() {
+        return chatRoomRepository.findAll();
+    }
 }
