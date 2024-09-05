@@ -2,6 +2,7 @@ package com.example.webchat.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,10 +23,13 @@ import com.example.webchat.dto.ResponseMessage;
 import com.example.webchat.dto.UserDTO;
 import com.example.webchat.entity.ChatEntity;
 import com.example.webchat.entity.ChatRoomEntity;
+import com.example.webchat.entity.UserEntity;
 import com.example.webchat.service.ChatRoomService;
 import com.example.webchat.service.ChatingService;
 import com.example.webchat.service.MessageService;
 import com.example.webchat.service.ReadStatusService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/chating")
@@ -42,13 +46,32 @@ public class ChatingController {
 
     // 채팅방 목록 페이지
     @GetMapping("/chatRoomList")
-    public String chatRoomList(Model model) {
-        // 채팅방 목록을 가져와서 모델에 추가
-        List<ChatRoomEntity> chatRooms = chatRoomService.getAllChatRooms();
-        model.addAttribute("chatRooms", chatRooms);
-        return "chating/chatRoomList"; // chatRoomList.jsp로 포워딩
-    }
+    public String chatRoomList(Model model, HttpSession session) {
+        // 유저 정보 가져오기
+        UserEntity user = (UserEntity) session.getAttribute("loggedInUser");
+        if (user != null) {
+            // UserDTO 생성
+            UserDTO userDTO = new UserDTO();
+            userDTO.setU_nickname((user.getUserNickname()));
+            model.addAttribute("loggedInUser", userDTO);
+        }
 
+        // 채팅방 목록 처리
+        List<ChatRoomEntity> chatRoomEntities = chatRoomService.getAllChatRooms();
+        List<ChatRoomDTO> chatRoomDTOs = chatRoomEntities.stream()
+            .map(entity -> {
+                ChatRoomDTO dto = new ChatRoomDTO();
+                dto.setChatRoomNo(entity.getChatRoomNo());
+                dto.setUserNickname(entity.getUserNickname());
+                dto.setChatRoomDatetime(entity.getChatRoomDatetime());
+                return dto;
+            })
+            .collect(Collectors.toList());
+        model.addAttribute("chatRooms", chatRoomDTOs);
+
+        return "chating/chatRoomList";
+    }
+    
     // 채팅방 페이지
     @GetMapping("/chatRoom/{chatRoomNo}")
     public String chatRoom(@PathVariable int chatRoomNo, Model model) {

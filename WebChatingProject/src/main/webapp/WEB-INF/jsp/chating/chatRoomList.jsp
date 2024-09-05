@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page import="com.example.webchat.dto.UserDTO" %>
 
 <!DOCTYPE html>
 <html>
@@ -13,7 +14,9 @@
 
     <div id="chatRoomList">
         <ul>
-            <!-- 서버에서 받아온 채팅방 목록을 여기에 표시 -->
+            <c:forEach var="room" items="${chatRooms}">
+                <li><a href="/chating/chatRoom/${room.chatRoomNo}">${room.chatRoomNo}번 방</a></li>
+            </c:forEach>
         </ul>
     </div>
 
@@ -26,26 +29,30 @@
 
     <script>
         $(document).ready(function() {
-            // 채팅방 목록 불러오기
+            const userNickname = '<c:out value="${loggedInUser.nickname}" />';
+
             function loadChatRooms() {
-                $.ajax({
-                    url: '/chating/rooms/user/${sessionScope.loggedInUser.userNickname}',
-                    type: 'GET',
-                    success: function(data) {
-                        $('#chatRoomList ul').empty();
-                        $.each(data, function(index, room) {
-                            $('#chatRoomList ul').append('<li><a href="/chating/rooms/' + room.chatRoomNo + '">' + room.chatRoomNo + '번 방</a></li>');
-                        });
-                    },
-                    error: function() {
-                        alert('채팅방 목록을 불러오지 못했습니다.');
-                    }
-                });
+                if (userNickname !== "") {
+                    $.ajax({
+                        url: '/chating/rooms/user/' + userNickname,
+                        type: 'GET',
+                        success: function(data) {
+                            $('#chatRoomList ul').empty();
+                            $.each(data, function(index, room) {
+                                $('#chatRoomList ul').append('<li><a href="/chating/chatRoom/' + room.chatRoomNo + '">' + room.chatRoomNo + '번 방</a></li>');
+                            });
+                        },
+                        error: function() {
+                            alert('채팅방 목록을 불러오지 못했습니다.');
+                        }
+                    });
+                } else {
+                    alert('유저 닉네임을 찾을 수 없습니다.');
+                }
             }
 
             loadChatRooms();
 
-            // 채팅방 생성
             $('#createRoomForm').on('submit', function(event) {
                 event.preventDefault();
                 const nickname = $('#nickname').val();
@@ -56,7 +63,7 @@
                     data: JSON.stringify({ userNickname: nickname }),
                     success: function(response) {
                         alert(response.message);
-                        loadChatRooms(); // 새로 만든 방 목록에 추가
+                        loadChatRooms();
                     },
                     error: function() {
                         alert('채팅방을 생성하지 못했습니다.');

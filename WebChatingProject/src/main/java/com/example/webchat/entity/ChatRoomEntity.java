@@ -32,4 +32,8 @@ public class ChatRoomEntity {
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     private List<ChatEntity> chats;
+    
+    public ChatRoomEntity() {
+        this.chatRoomDatetime = LocalDateTime.now(); // 현재 시간으로 설정
+    }
 }
